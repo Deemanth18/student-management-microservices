@@ -1,0 +1,16 @@
+services:
+  student-service:
+    build:
+      context: ./student-service
+    container_name: student-service
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  course-service:
+    build:
+      context: ./course-service
+    container_name: course-service
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
