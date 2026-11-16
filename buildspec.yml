@@ -1,3 +1,4 @@
+
 version: 0.2
 
 env:
@@ -13,22 +14,36 @@ phases:
 
   build:
     commands:
-      - echo "Building Student Service"
+      # Build Student Service
+      - echo "Building Student Service Docker image"
       - docker build -t student-service:latest ./student-service
       - docker tag student-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
-      - echo "Building Course Service"
+
+      # Build Course Service
+      - echo "Building Course Service Docker image"
       - docker build -t course-service:latest ./course-service
       - docker tag course-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
 
   post_build:
     commands:
-      - echo "Docker images pushed successfully"
-      - printf '[{"name":"student-service","imageUri":"%s"},{"name":"course_service","imageUri":"%s"}]' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest" > imagedefinitions.json
+      - echo "Preparing Student deployment artifacts"
+      - mkdir -p output/student
+      - cp deployment/student-appspec.yaml output/student/appspec.yaml
+      - cp deployment/student-taskdef.json output/student/taskdef.json
+      - printf '{"ImageURI":"%s"}' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest" > output/student/imageDetail.json
+
+      - echo "Preparing Course deployment artifacts"
+      - mkdir -p output/course
+      - cp deployment/course-appspec.yaml output/course/appspec.yaml
+      - cp deployment/course-taskdef.json output/course/taskdef.json
+      - printf '{"ImageURI":"%s"}' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest" > output/course/imageDetail.json
+
+      - echo "Both microservices built and pushed successfully"
 
 artifacts:
   files:
-    - imagedefinitions.json
-    - deployment/student-appspec.yml
-    - deployment/course-appspec.yml
+    - output/student/**/*
+    - output/course/**/*
+  discard-paths: no
