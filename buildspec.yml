@@ -40,10 +40,14 @@ phases:
       - cp deployment/course-taskdef.json output/course/taskdef.json
       - printf '{"ImageURI":"%s"}' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest" > output/course/imageDetail.json
 
-      - echo "Both microservices built and pushed successfully"
+      # Generate root-level image detail for Student deployment action
+      - cp output/student/imageDetail.json imageDetail.json
+
+      - echo "Deployment artifacts prepared successfully"
 
 artifacts:
   files:
+    - imageDetail.json
     - output/student/**/*
     - output/course/**/*
   discard-paths: no
