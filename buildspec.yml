@@ -1,4 +1,3 @@
-```yaml
 version: 0.2
 
 env:
@@ -9,24 +8,23 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR
+      - echo "Logging in to Amazon ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   build:
     commands:
-      - echo Building Student Service
+      - echo "Building Student Service"
       - docker build -t student-service:latest ./student-service
       - docker tag student-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
-
-      - echo Building Course Service
+      - echo "Building Course Service"
       - docker build -t course-service:latest ./course-service
       - docker tag course-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
 
   post_build:
     commands:
-      - echo Docker images pushed successfully
+      - echo "Docker images pushed successfully"
       - printf '[{"name":"student-service","imageUri":"%s"},{"name":"course_service","imageUri":"%s"}]' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest" > imagedefinitions.json
 
 artifacts:
@@ -34,4 +32,3 @@ artifacts:
     - imagedefinitions.json
     - deployment/student-appspec.yml
     - deployment/course-appspec.yml
-
