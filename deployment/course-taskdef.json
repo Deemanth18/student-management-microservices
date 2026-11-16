@@ -6,18 +6,39 @@
     {
       "name": "course_service",
       "image": "<IMAGE1_NAME>",
+      "cpu": 0,
       "essential": true,
       "portMappings": [
         {
           "containerPort": 3002,
-          "protocol": "tcp"
+          "hostPort": 3002,
+          "protocol": "tcp",
+          "name": "course_service-3002-tcp",
+          "appProtocol": "http"
         }
-      ]
+      ],
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/course-service-task",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-southeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "systemControls": []
     }
   ],
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
+  "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
-  "memory": "512"
+  "memory": "512",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
 }
