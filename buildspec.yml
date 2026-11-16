@@ -1,15 +1,37 @@
+```yaml
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-southeast-2
+    AWS_ACCOUNT_ID: "382525920826"
+
 phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
   build:
     commands:
-      - echo "Welcome to AWS CodeBuild"
-      - echo "Starting the build"
-      - echo "Current source directory:"
-      - pwd
-      - echo "Files in the repository:"
-      - ls -la
-      - test -f README.md
-      - echo "README.md was found"
-      - echo "Build completed successfully"
-      
+      - echo Building Student Service
+      - docker build -t student-service:latest ./student-service
+      - docker tag student-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest
+
+      - echo Building Course Service
+      - docker build -t course-service:latest ./course-service
+      - docker tag course-service:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest
+
+  post_build:
+    commands:
+      - echo Docker images pushed successfully
+      - printf '[{"name":"student-service","imageUri":"%s"},{"name":"course_service","imageUri":"%s"}]' "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/student-service:latest" "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/course-service:latest" > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - deployment/student-appspec.yml
+    - deployment/course-appspec.yml
+
