@@ -1,5 +1,4 @@
 version: 0.0
-
 Resources:
   - TargetService:
       Type: AWS::ECS::Service
@@ -8,3 +7,4 @@ Resources:
         LoadBalancerInfo:
           ContainerName: student-service
           ContainerPort: 3001
+        PlatformVersion: LATEST
